@@ -5,6 +5,7 @@ var _ = require('lodash')
 
 var midi = midifileparser(require('fs').readFileSync('smb1-Theme.mid', 'binary'))
 console.log(midi.tracks.length)
+console.log(midi.header.ticksPerBeat)
 
 _.each(midi.tracks[1], function(x) {
   console.log(
