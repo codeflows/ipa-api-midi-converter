@@ -1,0 +1,3 @@
+[submodule "jasmid"]
+	path = jasmid
+	url = https://github.com/gasman/jasmid.git
