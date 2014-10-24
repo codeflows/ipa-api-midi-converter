@@ -2,7 +2,17 @@ var request = require('request')
 var midiutils = require('midiutils')
 var midifileparser = require('midi-file-parser')
 
-request("http://www.midiarchive.co.uk/files/Games/Tetris/Tetris%20-%202a.mid", function(error, response, body) {
+var requestSettings = {
+  method: 'GET',
+  url: process.argv[2]
+  // Will read as binary
+  //encoding: null
+};
+
+request(requestSettings, function(error, response, body) {
+  if(error) {
+    throw "Uh oh: " + error;
+  }
   console.log(midifileparser(body))
 })
 
