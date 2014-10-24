@@ -3,7 +3,8 @@
   "version": "0.0.1",
   "dependencies": {
     "midiutils": "*",
-    "request": "*"
+    "request": "*",
+    "midi-file-parser": "*"
   },
   "description": "",
   "main": "index.js",
