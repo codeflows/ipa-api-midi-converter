@@ -8,14 +8,15 @@ console.log("Number of MIDI tracks", midi.tracks.length)
 console.log("Ticks per beat:", midi.header.ticksPerBeat)
 
 function toNotes(track) {
+  var currentTick = 0;
   var notes = [];
   var currentNote;
-  var currentTick = 0;
 
   _.each(track, function(event) {
     currentTick += event.deltaTime;
     if(event.subtype === 'noteOn') {
       if(currentNote) throw "Note already being played. Polyphony schmolyphony!"
+      notes.push({ rest: event.deltaTime })
       currentNote = {
         startTick: currentTick,
         noteNumber: event.noteNumber
@@ -41,6 +42,6 @@ var notesPerTrack = _.map(midi.tracks, toNotes)
 _.each(notesPerTrack, function(notes, i) {
   console.log("Track", i)
   _.each(notes, function(note) {
-    console.log("Note", note.noteNumber)
+    console.log("Note", note)
   })
 })
