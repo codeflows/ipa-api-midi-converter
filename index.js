@@ -3,9 +3,8 @@ var midiutils = require('midiutils')
 var midifileparser = require('midi-file-parser')
 var _ = require('lodash')
 
-var midi = midifileparser(require('fs').readFileSync('smb1-Theme.mid', 'binary'))
-console.log("Number of MIDI tracks", midi.tracks.length)
-console.log("Ticks per beat:", midi.header.ticksPerBeat)
+var file = process.argv[2]
+var midi = midifileparser(require('fs').readFileSync(file, 'binary'))
 
 function toNotes(track) {
   var currentTick = 0;
