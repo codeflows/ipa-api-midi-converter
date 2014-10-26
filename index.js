@@ -13,11 +13,18 @@ function toNotes(track) {
   var currentNote;
   var tempoInMicrosecondsPerBeat;
 
+  function ticksInMicroseconds(ticks) {
+    if(!tempoInMicrosecondsPerBeat) throw "No tempo defined!"
+    var beats = ticks/ticksPerBeat
+    var lengthInMicroseconds = beats * tempoInMicrosecondsPerBeat
+    return lengthInMicroseconds
+  }
+
   _.each(track, function(event) {
     currentTick += event.deltaTime;
     if(event.subtype === 'noteOn') {
       if(currentNote) throw "Note already being played. Polyphony schmolyphony!"
-      notes.push({ rest: event.deltaTime })
+      notes.push({ type: 'rest', lengthInMicroseconds: ticksInMicroseconds(event.deltaTime) })
       currentNote = {
         startTick: currentTick,
         noteNumber: event.noteNumber
@@ -26,10 +33,11 @@ function toNotes(track) {
       if(!currentNote) throw "Note off with no current note?!?!"
       if(currentNote.noteNumber !== event.noteNumber) throw "That's not right"
       notes.push({
-        length: currentTick - currentNote.startTick,
-        noteNumber: event.noteNumber,
+        type: 'note',
+        lengthInMicroseconds: ticksInMicroseconds(currentTick - currentNote.startTick),
+        note: midiutils.noteNumberToName(event.noteNumber),
+        midiNoteNumber: event.noteNumber,
         frequency: midiutils.noteNumberToFrequency(event.noteNumber),
-        name: midiutils.noteNumberToName(event.noteNumber),
         velocity: event.velocity
       })
       currentNote = null
@@ -38,7 +46,7 @@ function toNotes(track) {
     }
   })
 
-  return notes
+  return _.filter(notes, function(note) { return note.lengthInMicroseconds > 0 })
 }
 
 var notesPerTrack = _.map(midi.tracks, toNotes)
