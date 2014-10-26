@@ -11,6 +11,7 @@ function toNotes(track) {
   var currentTick = 0;
   var notes = [];
   var currentNote;
+  var tempoInMicrosecondsPerBeat;
 
   _.each(track, function(event) {
     currentTick += event.deltaTime;
@@ -32,6 +33,8 @@ function toNotes(track) {
         velocity: event.velocity
       })
       currentNote = null
+    } else if(event.subtype === 'setTempo') {
+      tempoInMicrosecondsPerBeat = event.microsecondsPerBeat;
     }
   })
 
