@@ -1,3 +1,5 @@
+#!/usr/bin/env node
+
 var request = require('request')
 var midiutils = require('midiutils')
 var midifileparser = require('midi-file-parser')
