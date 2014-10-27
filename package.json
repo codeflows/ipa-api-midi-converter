@@ -8,10 +8,6 @@
     "lodash": "*"
   },
   "description": "",
-  "main": "index.js",
-  "scripts": {
-    "convert": "node index.js"
-  },
   "author": "Jari Aarniala",
   "license": "MIT"
 }
