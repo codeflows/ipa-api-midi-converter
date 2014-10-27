@@ -10,17 +10,24 @@ if(process.argv.length < 3) {
   return;
 }
 
+// beats per minute
+var defaultTempo = bpmToMicrosecondsPerBeat(120);
+
 var file = process.argv[2]
 var midi = midifileparser(require('fs').readFileSync(file, 'binary'))
+
+function bpmToMicrosecondsPerBeat(bpm) {
+  var oneMinuteInMicroseconds = 60 * 1000 * 1000
+  return oneMinuteInMicroseconds / bpm
+}
 
 function toNotes(track) {
   var currentTick = 0;
   var notes = [];
   var currentNote;
-  var tempoInMicrosecondsPerBeat;
+  var tempoInMicrosecondsPerBeat = defaultTempo;
 
   function ticksInMicroseconds(ticks) {
-    if(!tempoInMicrosecondsPerBeat) throw "No tempo defined!"
     var beats = ticks/ticksPerBeat
     var lengthInMicroseconds = beats * tempoInMicrosecondsPerBeat
     return lengthInMicroseconds
