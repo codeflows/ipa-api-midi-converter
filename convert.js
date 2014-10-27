@@ -3,6 +3,11 @@ var midiutils = require('midiutils')
 var midifileparser = require('midi-file-parser')
 var _ = require('lodash')
 
+if(process.argv.length < 3) {
+  console.log("Usage: node convert.js [midifile]")
+  return;
+}
+
 var file = process.argv[2]
 var midi = midifileparser(require('fs').readFileSync(file, 'binary'))
 
