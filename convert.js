@@ -5,8 +5,8 @@ var midiutils = require('midiutils')
 var midifileparser = require('midi-file-parser')
 var _ = require('lodash')
 
-if(process.argv.length < 3) {
-  console.log("Usage: node convert.js [midifile]")
+if(process.argv.length < 3 || process.argv.length > 4) {
+  console.log("Usage: node convert.js [midi-file] (midi-track-number)")
   return;
 }
 
@@ -14,7 +14,32 @@ if(process.argv.length < 3) {
 var defaultTempo = bpmToMicrosecondsPerBeat(120);
 
 var file = process.argv[2]
+var track = process.argv[3]
 var midi = midifileparser(require('fs').readFileSync(file, 'binary'))
+
+var allTracks = _.map(midi.tracks, toNotes)
+
+if(track) {
+  printImpCode(allTracks[track - 1], track)
+} else {
+  _.each(allTracks, printImpCode)
+
+  console.log("// This MIDI file has", midi.tracks.length, "tracks.")
+  console.log("// Run with convert.js", file, "(midi-track-number) to only print score for a specific track")
+}
+
+function printImpCode(track, number) {
+  console.log("// track #", number)
+  _.each(track, function(note) {
+    var lengthInSeconds = note.lengthInMicroseconds / 1000.0 / 1000.0
+    if(note.type === "rest") {
+      console.log("rest(" + lengthInSeconds + ");")
+    } else {
+      console.log("playNote(" + note.frequency + ", " + lengthInSeconds + ");")
+    }
+  })
+  console.log()
+}
 
 function bpmToMicrosecondsPerBeat(bpm) {
   var oneMinuteInMicroseconds = 60 * 1000 * 1000
@@ -61,16 +86,3 @@ function toNotes(track) {
 
   return _.filter(notes, function(note) { return note.lengthInMicroseconds > 0 })
 }
-
-var notesPerTrack = _.map(midi.tracks, toNotes)
-_.each(notesPerTrack, function(notes, i) {
-  console.log("// track", i)
-  _.each(notes, function(note) {
-    var lengthInSeconds = note.lengthInMicroseconds / 1000.0 / 1000.0
-    if(note.type === "rest") {
-      console.log("rest(" + lengthInSeconds + ");")
-    } else {
-      console.log("playNote(" + note.frequency + ", " + lengthInSeconds + ");")
-    }
-  })
-})
