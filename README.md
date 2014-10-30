@@ -1,5 +1,6 @@
-Converts monophonic MIDI tracks to proprietary code that plays sounds on an Electric Imp.
+Quick hack that converts monophonic MIDI tracks to proprietary code that plays sounds on an Electric Imp.
 
-Example:
+Example usage:
 
-./convert.js smb1-Theme.mid 2 | pbcopy
+npm install
+./convert.js smb1-Theme.mid
