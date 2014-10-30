@@ -65,7 +65,7 @@ function parseMonophonicMidiNotes(track) {
   var notes = [];
   var currentNote;
   var tempoInMicrosecondsPerBeat = defaultTempo;
-  var name;
+  var trackName;
 
   function ticksInMicroseconds(ticks) {
     var beats = ticks/ticksPerBeat
@@ -102,12 +102,12 @@ function parseMonophonicMidiNotes(track) {
     } else if(event.subtype === 'setTempo') {
       tempoInMicrosecondsPerBeat = event.microsecondsPerBeat;
     } else if(event.subtype === 'trackName') {
-      name = event.text
+      trackName = event.text
     }
   })
 
   return {
-    name: name,
+    name: trackName,
     notes: _.filter(notes, function(note) { return note.lengthInMicroseconds > 0 })
   }
 }
