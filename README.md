@@ -2,5 +2,5 @@ Quick hack that converts monophonic MIDI tracks to proprietary code that plays s
 
 Example usage:
 
-npm install
-./convert.js smb1-Theme.mid
+    npm install
+    ./convert.js smb1-Theme.mid
