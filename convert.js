@@ -64,8 +64,13 @@ function toNotes(track) {
 
 var notesPerTrack = _.map(midi.tracks, toNotes)
 _.each(notesPerTrack, function(notes, i) {
-  console.log("Track", i)
+  console.log("// track", i)
   _.each(notes, function(note) {
-    console.log("Note", note)
+    var lengthInSeconds = note.lengthInMicroseconds / 1000.0 / 1000.0
+    if(note.type === "rest") {
+      console.log("rest(" + lengthInSeconds + ");")
+    } else {
+      console.log("playNote(" + note.frequency + ", " + lengthInSeconds + ");")
+    }
   })
 })
