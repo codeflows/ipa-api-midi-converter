@@ -17,7 +17,13 @@ var file = process.argv[2]
 var track = process.argv[3]
 var midi = midifileparser(require('fs').readFileSync(file, 'binary'))
 
-var allTracks = _.map(midi.tracks, parseMonophonicMidiNotes)
+var allTracks = _.map(midi.tracks, function(track) {
+  try {
+    return parseMonophonicMidiNotes(track)
+  } catch(e) {
+    return { error: e }
+  }
+})
 
 if(track) {
   printImpCode(allTracks[track - 1], track)
@@ -26,21 +32,26 @@ if(track) {
 
   console.log("// This MIDI file has", midi.tracks.length, "tracks:")
   _.each(allTracks, function(track, i) {
-    console.log("// " + (i + 1) + ": \"" + track.name + "\", " + track.notes.length + " notes")
+    console.log("// " + (i + 1) + ": \"" + track.name + "\"" + (track.error ? " ERROR: " + track.error : ""))
   })
+  console.log("//")
   console.log("// Run with convert.js", file, "(midi-track-number) to only print score for a specific track")
 }
 
 function printImpCode(track, number) {
   console.log("// track #", number, ", name=\"" + track.name + "\"")
-  _.each(track.notes, function(note) {
-    var lengthInSeconds = note.lengthInMicroseconds / 1000.0 / 1000.0
-    if(note.type === "rest") {
-      console.log("rest(" + lengthInSeconds + ");")
-    } else {
-      console.log("playNote(" + note.frequency + ", " + lengthInSeconds + ");")
-    }
-  })
+  if(track.error) {
+    console.log(track.error)
+  } else {
+    _.each(track.notes, function(note) {
+      var lengthInSeconds = note.lengthInMicroseconds / 1000.0 / 1000.0
+      if(note.type === "rest") {
+        console.log("rest(" + lengthInSeconds + ");")
+      } else {
+        console.log("playNote(" + note.frequency + ", " + lengthInSeconds + ");")
+      }
+    })
+  }
   console.log()
 }
 
@@ -65,7 +76,7 @@ function parseMonophonicMidiNotes(track) {
   _.each(track, function(event) {
     currentTick += event.deltaTime;
     if(event.subtype === 'noteOn') {
-      if(currentNote) throw "Note already being played. Polyphony schmolyphony!"
+      if(currentNote) throw "Polyphonic content, can't handle that!"
       notes.push({ type: 'rest', lengthInMicroseconds: ticksInMicroseconds(event.deltaTime) })
       currentNote = {
         startTick: currentTick,
