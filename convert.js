@@ -17,20 +17,23 @@ var file = process.argv[2]
 var track = process.argv[3]
 var midi = midifileparser(require('fs').readFileSync(file, 'binary'))
 
-var allTracks = _.map(midi.tracks, toNotes)
+var allTracks = _.map(midi.tracks, parseMonophonicMidiNotes)
 
 if(track) {
   printImpCode(allTracks[track - 1], track)
 } else {
   _.each(allTracks, printImpCode)
 
-  console.log("// This MIDI file has", midi.tracks.length, "tracks.")
+  console.log("// This MIDI file has", midi.tracks.length, "tracks:")
+  _.each(allTracks, function(track, i) {
+    console.log("// " + (i + 1) + ": \"" + track.name + "\", " + track.notes.length + " notes")
+  })
   console.log("// Run with convert.js", file, "(midi-track-number) to only print score for a specific track")
 }
 
 function printImpCode(track, number) {
-  console.log("// track #", number)
-  _.each(track, function(note) {
+  console.log("// track #", number, ", name=\"" + track.name + "\"")
+  _.each(track.notes, function(note) {
     var lengthInSeconds = note.lengthInMicroseconds / 1000.0 / 1000.0
     if(note.type === "rest") {
       console.log("rest(" + lengthInSeconds + ");")
@@ -46,11 +49,12 @@ function bpmToMicrosecondsPerBeat(bpm) {
   return oneMinuteInMicroseconds / bpm
 }
 
-function toNotes(track) {
+function parseMonophonicMidiNotes(track) {
   var currentTick = 0;
   var notes = [];
   var currentNote;
   var tempoInMicrosecondsPerBeat = defaultTempo;
+  var name;
 
   function ticksInMicroseconds(ticks) {
     var beats = ticks/ticksPerBeat
@@ -81,8 +85,13 @@ function toNotes(track) {
       currentNote = null
     } else if(event.subtype === 'setTempo') {
       tempoInMicrosecondsPerBeat = event.microsecondsPerBeat;
+    } else if(event.subtype === 'trackName') {
+      name = event.text
     }
   })
 
-  return _.filter(notes, function(note) { return note.lengthInMicroseconds > 0 })
+  return {
+    name: name,
+    notes: _.filter(notes, function(note) { return note.lengthInMicroseconds > 0 })
+  }
 }
