@@ -73,6 +73,19 @@ function parseMonophonicMidiNotes(track) {
     return lengthInMicroseconds
   }
 
+  function endCurrentNote() {
+    var noteNumber = currentNote.event.noteNumber
+    notes.push({
+      type: 'note',
+      lengthInMicroseconds: ticksInMicroseconds(currentTick - currentNote.startTick),
+      note: midiutils.noteNumberToName(noteNumber),
+      midiNoteNumber: noteNumber,
+      frequency: midiutils.noteNumberToFrequency(noteNumber),
+      velocity: currentNote.event.velocity
+    })
+    currentNote = null
+  }
+
   _.each(track, function(event) {
     currentTick += event.deltaTime;
     if(event.subtype === 'noteOn') {
@@ -80,20 +93,12 @@ function parseMonophonicMidiNotes(track) {
       notes.push({ type: 'rest', lengthInMicroseconds: ticksInMicroseconds(event.deltaTime) })
       currentNote = {
         startTick: currentTick,
-        noteNumber: event.noteNumber
+        event: event
       }
     } else if(event.subtype === 'noteOff') {
       if(!currentNote) throw "Note off with no current note?!?!"
-      if(currentNote.noteNumber !== event.noteNumber) throw "That's not right"
-      notes.push({
-        type: 'note',
-        lengthInMicroseconds: ticksInMicroseconds(currentTick - currentNote.startTick),
-        note: midiutils.noteNumberToName(event.noteNumber),
-        midiNoteNumber: event.noteNumber,
-        frequency: midiutils.noteNumberToFrequency(event.noteNumber),
-        velocity: event.velocity
-      })
-      currentNote = null
+      if(currentNote.event.noteNumber !== event.noteNumber) throw "Note number doesn't correspond to reality"
+      endCurrentNote()
     } else if(event.subtype === 'setTempo') {
       tempoInMicrosecondsPerBeat = event.microsecondsPerBeat;
     } else if(event.subtype === 'trackName') {
